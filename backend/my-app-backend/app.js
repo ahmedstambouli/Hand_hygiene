@@ -56,7 +56,7 @@ app.post("/api/upload", upload.single("file"), async (req, res) => {
         const model = genAI.getGenerativeModel({ model: "gemini-1.5-flash" });
         //Is the hand clean and I want the percentage of dirt according to approximation and I want it in json format and format json :clean,dirt_percentage,message,description,number_hand,Rings
         //const prompt = "Is the hand clean and I want the percentage of dirt according to approximation and I want it in json format and format json :clean,dirt_percentage,message";
-        const prompt = "describe this picture and Is the hand clean and I want the percentage of dirt according to approximation and I want it in json format and format json : clean:boolean,dirt_percentage:number,message,describe ,number_hand,Condition_of_the_Hand,Details_and_Observations,Possible_Interpretations"
+        const prompt = "describe this picture and Is the hand clean and I want the percentage of dirt according to approximation and I want it in json format and format json : clean:boolean,dirt_percentage:number,message,describe ,number_hand,Condition_of_the_Hand,Details_and_Observations,Possible_Interpretations,,hand_people:boolean ,open_hand:boolean"
         const imageFilePath = req.file.path;
         const imageData = fs.readFileSync(imageFilePath);
         const base64Image = Buffer.from(imageData).toString("base64");
@@ -72,13 +72,16 @@ app.post("/api/upload", upload.single("file"), async (req, res) => {
         const responseText = result.response.text();
         const cleanedResponseText = responseText.replace(/```json|```/g, '').trim();
         const jsonResponse = JSON.parse(cleanedResponseText);
-
+        if(jsonResponse.open_hand===false){
+            
+            res.status(406).json({resultat:false})
+        }
+        else{
         res.json(jsonResponse);
 
         const date = new Date();
 
         console.log(jsonResponse);
-
 
         const hanAnlays = new HandAnalysis({
             //imageId: jsonResponse.imageId, // Assurez-vous que cette propriété existe dans la réponse JSON
@@ -90,6 +93,7 @@ app.post("/api/upload", upload.single("file"), async (req, res) => {
             Condition_of_the_Hand: jsonResponse.Condition_of_the_Hand,
             Details_and_Observations: jsonResponse.Details_and_Observations,
             Possible_Interpretations: jsonResponse.Possible_Interpretations,
+            
 
         })
         await hanAnlays.save();
@@ -118,7 +122,7 @@ app.post("/api/upload", upload.single("file"), async (req, res) => {
 
 
 
-
+    }
 
 
 
