@@ -74,7 +74,7 @@ app.post("/api/upload", upload.single("file"), async (req, res) => {
         const jsonResponse = JSON.parse(cleanedResponseText);
         if(jsonResponse.open_hand===false){
             
-            res.status(406).json({resultat:false})
+            res.status(406).json({message:"Picture Not Acceptable  "})
         }
         else{
         res.json(jsonResponse);
